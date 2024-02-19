@@ -22,7 +22,7 @@ The `<umb-debug>` component can be used in two different ways, either as a butto
 
 ```typescript
 // This will add a Debug button to the UI and once clicked the information about avilable contextes will slide down
-<umb-debug visible></umb-debug>
+<umb-debug></umb-debug>
 ```
 
 #### Dialog
@@ -33,16 +33,5 @@ This example uses an additional property/attribute `dialog` which adds a smaller
 
 ```typescript
 // This will open the debug information in a small dialog/modal from the right hand side
-<umb-debug visible dialog></umb-debug>
-```
-
-#### Disable
-
-You may wish to temporarily hide or disable the debug information but return to it later on in the development process.
-
-```typescript
-// To hide or remove the button ensure you remove the `visible` attribute or set it to false
-<umb-debug></umb-debug>
-
-<umb-debug ?visible=${false}></umb-debug>
+<umb-debug dialog></umb-debug>
 ```

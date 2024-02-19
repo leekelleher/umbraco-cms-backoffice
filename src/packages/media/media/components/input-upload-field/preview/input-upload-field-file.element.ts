@@ -48,7 +48,8 @@ export default class UmbInputUploadFieldFileElement extends UmbLitElement {
 				if (this.file) return;
 
 				this.extension = this.path.split('.').pop() ?? '';
-				this.label = this.#serverUrl ? this.path.substring(this.#serverUrl.length) : this.#loadingText;
+				// TODO: [LK] ref: https://github.com/umbraco/Umbraco-CMS/issues/16930
+				this.label = this.path.split('/').pop() ?? '';
 			}
 		}
 	}

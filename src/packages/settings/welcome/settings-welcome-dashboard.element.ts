@@ -16,7 +16,7 @@ export class UmbSettingsWelcomeDashboardElement extends UmbLitElement {
 					</p>
 					<uui-button
 						look="primary"
-						href="https://docs.umbraco.com/umbraco-cms/umbraco-cms"
+						href="https://docs.umbraco.com/umbraco-cms"
 						label=${this.localize.term('settingsDashboard_getHelp')}
 						target="_blank"
 						rel="noopener"></uui-button>
@@ -33,7 +33,7 @@ export class UmbSettingsWelcomeDashboardElement extends UmbLitElement {
 					<div class="button-group">
 						<uui-button
 							look="primary"
-							href="https://our.umbraco.com/forum"
+							href="https://our.umbraco.com/forum/"
 							label=${this.localize.term('settingsDashboard_goForum')}
 							target="_blank"
 							rel="noopener"></uui-button>

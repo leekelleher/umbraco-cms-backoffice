@@ -69,24 +69,32 @@ export class UmbUmbracoNewsDashboardElement extends UmbLitElement {
 				grid-column-end: -1;
 				margin-bottom: var(--uui-size-space-4);
 			}
+
 			#info-links {
 				display: grid;
-				max-width: 1000px;
-				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+				grid-template-columns: repeat(auto-fill, minmax(20%, 1fr));
 				grid-gap: var(--uui-size-space-4);
 			}
+
 			.info-link {
-				border: 1px solid var(--uui-color-border);
-				padding: var(--uui-size-space-4);
-				border-radius: calc(var(--uui-border-radius) * 2);
-				line-height: 1.5;
+				border: var(--uui-box-border-width, 0) solid
+					var(--uui-box-border-color, var(--uui-color-divider-standalone, #e9e9eb));
+				border-radius: var(--uui-box-border-radius, var(--uui-border-radius, 3px));
+				box-shadow: var(
+					--uui-box-box-shadow,
+					var(--uui-shadow-depth-1, 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24))
+				);
 				background-color: var(--uui-color-surface);
 				text-decoration: none;
+				line-height: 1.5;
+				padding: var(--uui-size-space-4);
 			}
+
 			.info-link h3 {
 				margin-top: 0;
 				margin-bottom: var(--uui-size-space-1);
 			}
+
 			.info-link p {
 				margin-top: 0;
 				margin-bottom: 0;

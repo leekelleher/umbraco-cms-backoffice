@@ -216,7 +216,7 @@ export class UmbUserGroupWorkspaceEditorElement extends UmbLitElement {
 					id="name"
 					label=${this.localize.term('placeholders_entername')}
 					.value=${this._name}
-					alias=${ifDefined(this._alias)}
+					.alias=${this._alias}
 					?auto-generate-alias=${this._isNew}
 					?alias-readonly=${this._aliasCanBeChanged === false}
 					@change=${this.#onNameAndAliasChange}

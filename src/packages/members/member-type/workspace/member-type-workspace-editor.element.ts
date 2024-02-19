@@ -87,8 +87,8 @@ export class UmbMemberTypeWorkspaceEditorElement extends UmbLitElement {
 						<umb-input-with-alias
 							id="name"
 							label=${this.localize.term('placeholders_entername')}
-							value=${this._name}
-							alias=${this._alias}
+							.value=${this._name}
+							.alias=${this._alias}
 							?auto-generate-alias=${this._isNew}
 							@change=${this.#onNameAndAliasChange}
 							${umbFocus()}>

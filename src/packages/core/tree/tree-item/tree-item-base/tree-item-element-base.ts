@@ -1,7 +1,7 @@
 import type { UmbTreeItemContext } from '../index.js';
 import type { UmbTreeItemModel } from '../../types.js';
 import { UMB_TREE_ITEM_CONTEXT } from './tree-item-context-base.js';
-import { html, nothing, state, ifDefined, repeat, property } from '@umbraco-cms/backoffice/external/lit';
+import { html, ifDefined, nothing, property, repeat, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 
 // eslint-disable-next-line local-rules/enforce-element-suffix-on-element-class-name
@@ -198,6 +198,6 @@ export abstract class UmbTreeItemElementBase<TreeItemModelType extends UmbTreeIt
 			return nothing;
 		}
 
-		return html` <uui-button @click=${this.#onLoadMoreClick} label="Load more"></uui-button> `;
+		return html` <uui-button @click=${this.#onLoadMoreClick} label="Load more" look="secondary"></uui-button> `;
 	}
 }

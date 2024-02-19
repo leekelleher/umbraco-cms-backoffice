@@ -1,5 +1,5 @@
-import { UMB_CONTEXT_DEBUGGER_MODAL } from './debug-modal/index.js';
-import { css, customElement, html, map, nothing, property, state, when } from '@umbraco-cms/backoffice/external/lit';
+import { UMB_CONTEXT_DEBUGGER_MODAL } from './debug-modal/debug-modal.token.js';
+import { css, customElement, html, map, property, state, when } from '@umbraco-cms/backoffice/external/lit';
 import { contextData, UmbContextDebugRequest } from '@umbraco-cms/backoffice/context-api';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UMB_MODAL_MANAGER_CONTEXT } from '@umbraco-cms/backoffice/modal';
@@ -8,9 +8,6 @@ import type { UmbModalManagerContext } from '@umbraco-cms/backoffice/modal';
 
 @customElement('umb-debug')
 export class UmbDebugElement extends UmbLitElement {
-	@property({ type: Boolean })
-	visible = false;
-
 	@property({ type: Boolean })
 	dialog = false;
 
@@ -64,44 +61,34 @@ export class UmbDebugElement extends UmbLitElement {
 	}
 
 	override render() {
-		if (!this.visible) return nothing;
-		return this.dialog ? this.#renderDialog() : this.#renderPanel();
-	}
-
-	#renderDialog() {
-		return html`
-			<div>
-				<uui-badge color="danger" look="primary" @click=${this.#openDialog}>
-					<uui-icon name="icon-bug"></uui-icon>
-					<span>Debug</span>
-				</uui-badge>
-			</div>
-		`;
-	}
-
-	#renderPanel() {
 		return html`
 			<div id="container">
-				<uui-button color="danger" look="primary" @click=${this.#toggleDebugPane}>
+				<uui-button
+					compact
+					color="danger"
+					look="primary"
+					@click=${this.dialog ? this.#openDialog : this.#toggleDebugPane}>
 					<uui-icon name="icon-bug"></uui-icon>
 					<span>Debug</span>
 				</uui-button>
-				${when(this._debugPaneOpen, () => this.#renderContextAliases())}
+				${when(!this.dialog && this._debugPaneOpen, () => this.#renderContextAliases())}
 			</div>
 		`;
 	}
 
 	#renderContextAliases() {
-		return html`<div class="events">
-			${map(this._contextData, (context) => {
-				return html`
-					<details>
-						<summary><strong>${context.alias}</strong></summary>
-						${this.#renderInstance(context.data)}
-					</details>
-				`;
-			})}
-		</div>`;
+		return html`
+			<div class="events">
+				${map(this._contextData, (context) => {
+					return html`
+						<details>
+							<summary><strong>${context.alias}</strong></summary>
+							${this.#renderInstance(context.data)}
+						</details>
+					`;
+				})}
+			</div>
+		`;
 	}
 
 	#renderInstance(instance: UmbDebugContextItemData) {
@@ -152,21 +139,14 @@ export class UmbDebugElement extends UmbLitElement {
 	static override styles = [
 		css`
 			:host {
-				float: right;
+				display: inline-flex;
 				font-family: monospace;
-				position: relative;
-				z-index: 10000;
 			}
 
 			#container {
 				display: flex;
 				flex-direction: column;
 				align-items: flex-end;
-			}
-
-			uui-badge {
-				cursor: pointer;
-				gap: 0.5rem;
 			}
 
 			uui-icon {

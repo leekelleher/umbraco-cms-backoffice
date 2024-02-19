@@ -1,12 +1,13 @@
-import type { UmbDocumentTypeWorkspaceContext } from '../../document-type-workspace.context.js';
 import { UMB_DOCUMENT_TYPE_WORKSPACE_CONTEXT } from '../../document-type-workspace.context-token.js';
-import type { UmbInputTemplateElement } from '@umbraco-cms/backoffice/template';
-import { css, html, customElement, state, when } from '@umbraco-cms/backoffice/external/lit';
-import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
+import type { UmbDocumentTypeWorkspaceContext } from '../../document-type-workspace.context.js';
+import { css, customElement, html, state, when } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
+import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 import type { UmbWorkspaceViewElement } from '@umbraco-cms/backoffice/workspace';
+import type { UmbInputTemplateElement } from '@umbraco-cms/backoffice/template';
 
-import '@umbraco-cms/backoffice/template'; // TODO: This is needed to register the <umb-input-template> element, but it should be done in a better way without importing the whole module.
+// TODO: This is needed to register the <umb-input-template> element, but it should be done in a better way without importing the whole module.
+import '@umbraco-cms/backoffice/template';
 
 @customElement('umb-document-type-workspace-view-templates')
 export class UmbDocumentTypeWorkspaceViewTemplatesElement extends UmbLitElement implements UmbWorkspaceViewElement {
@@ -60,9 +61,9 @@ export class UmbDocumentTypeWorkspaceViewTemplatesElement extends UmbLitElement 
 		);
 	}
 
-	#templateInputChange(e: CustomEvent) {
+	#templateInputChange(event: CustomEvent & { target: UmbInputTemplateElement }) {
 		// save new allowed ids
-		const input = e.target as UmbInputTemplateElement;
+		const input = event.target;
 		const idsWithoutRoot =
 			input.selection
 				?.filter((id) => id !== null)

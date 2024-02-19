@@ -8,9 +8,7 @@ import type { UmbPropertyEditorConfigCollection } from '@umbraco-cms/backoffice/
 
 import '../toolbar/tiptap-toolbar-dropdown-base.element.js';
 
-const elementName = 'umb-tiptap-toolbar';
-
-@customElement(elementName)
+@customElement('umb-tiptap-toolbar')
 export class UmbTiptapToolbarElement extends UmbLitElement {
 	#attached = false;
 	#extensionsController?: UmbExtensionsElementAndApiInitializer;
@@ -62,24 +60,19 @@ export class UmbTiptapToolbarElement extends UmbLitElement {
 	}
 
 	override render() {
-		return html`${map(this.toolbar, (row, rowIndex) =>
-			map(
-				row,
-				(group, groupIndex) => html`
-					${map(group, (alias, aliasIndex) => {
-						const newRow = rowIndex !== 0 && groupIndex === 0 && aliasIndex === 0;
-						const component = this._lookup?.get(alias);
-						if (!component) return nothing;
-						return html`
-							<div class="item" ?data-new-row=${newRow} style=${newRow ? 'grid-column: 1 / span 3' : ''}>
-								${component}
-							</div>
-						`;
-					})}
-					<div class="separator"></div>
+		return html`
+			${map(
+				this.toolbar,
+				(row) => html`
+					<div class="row">
+						${map(
+							row,
+							(group) => html`<div class="group">${map(group, (alias) => this._lookup?.get(alias) ?? nothing)}</div>`,
+						)}
+					</div>
 				`,
-			),
-		)} `;
+			)}
+		`;
 	}
 
 	static override readonly styles = css`
@@ -99,37 +92,41 @@ export class UmbTiptapToolbarElement extends UmbLitElement {
 
 			background-color: var(--uui-color-surface-alt);
 			color: var(--color-text);
-			display: grid;
-			grid-template-columns: repeat(auto-fill, 10px);
-			grid-auto-flow: row;
+
+			display: flex;
+			flex-direction: column;
 
 			position: sticky;
 			top: -25px;
 			left: 0px;
 			right: 0px;
-			padding: var(--uui-size-space-3);
+			padding: var(--uui-size-3);
 			z-index: 9999999;
 		}
 
-		.item {
-			grid-column: span 3;
-		}
+		.row {
+			display: flex;
+			flex-direction: row;
 
-		.separator {
-			background-color: var(--uui-color-border);
-			width: 1px;
-			place-self: center;
-			height: 22px;
-		}
-		.separator:last-child,
-		.separator:has(+ [data-new-row]) {
-			display: none;
+			.group {
+				display: inline-flex;
+				align-items: stretch;
+
+				&:not(:last-child)::after {
+					content: '';
+					background-color: var(--uui-color-border);
+					width: 1px;
+					place-self: center;
+					height: 22px;
+					margin: 0 var(--uui-size-3);
+				}
+			}
 		}
 	`;
 }
 
 declare global {
 	interface HTMLElementTagNameMap {
-		[elementName]: UmbTiptapToolbarElement;
+		'umb-tiptap-toolbar': UmbTiptapToolbarElement;
 	}
 }

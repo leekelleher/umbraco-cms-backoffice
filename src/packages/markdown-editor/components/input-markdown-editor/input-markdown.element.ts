@@ -16,8 +16,6 @@ import { umbExtensionsRegistry } from '@umbraco-cms/backoffice/extension-registr
 import { UmbChangeEvent, type UmbInputEvent } from '@umbraco-cms/backoffice/event';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import { UMB_MODAL_MANAGER_CONTEXT } from '@umbraco-cms/backoffice/modal';
-import { UMB_MEDIA_PICKER_MODAL, UmbMediaUrlRepository } from '@umbraco-cms/backoffice/media';
 import { UmbCodeEditorLoadedEvent } from '@umbraco-cms/backoffice/code-editor';
 import type { UmbCodeEditorController, UmbCodeEditorElement } from '@umbraco-cms/backoffice/code-editor';
 import type { UUIModalSidebarSize } from '@umbraco-cms/backoffice/external/uui';
@@ -27,6 +25,7 @@ import { sanitizeHTML } from '@umbraco-cms/backoffice/utils';
 interface UmbMarkdownEditorAction extends monaco.editor.IActionDescriptor {
 	icon?: string | null;
 }
+
 
 /**
  * @element umb-input-markdown
@@ -70,8 +69,6 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 	@state()
 	private _actionExtensions: Array<UmbMarkdownEditorAction> = [];
 
-	#mediaUrlRepository = new UmbMediaUrlRepository(this);
-
 	#onCodeEditorLoaded(event: UmbCodeEditorLoadedEvent) {
 		if (event.type !== UmbCodeEditorLoadedEvent.TYPE) return;
 
@@ -105,7 +102,7 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 	}
 
 	#loadActions() {
-		//Note: UI Buttons have the keybindings hardcoded in its title. If you change the keybindings here, please update the render as well.
+		// Note: UI Buttons have the keybindings hardcoded in its title. If you change the keybindings here, please update the render as well.
 		this.#editor?.monacoEditor?.addAction({
 			label: 'Add Heading H1',
 			id: 'h1',
@@ -152,7 +149,7 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 			label: 'Add Italic Text',
 			id: 'i',
 			keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI],
-			run: () => this._insertBetweenSelection('*', '*', 'Your Italic Text'),
+			run: () => this._insertBetweenSelection('_', '_', 'Your Italic Text'),
 		});
 		this.#editor?.monacoEditor?.addAction({
 			label: 'Add Quote',
@@ -188,13 +185,6 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 			id: 'line',
 			run: () => this._insertLine(),
 		});
-		this.#editor?.monacoEditor?.addAction({
-			label: 'Add Image',
-			id: 'image',
-			//keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ], // What keybinding would be good for image?
-			run: () => this.#insertMedia(),
-			// TODO: Update when media picker is complete.
-		});
 	}
 
 	#onActionClick(event: Event, action: monaco.editor.IActionDescriptor) {
@@ -207,44 +197,6 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 	private _focusEditor(): void {
 		// If we press one of the action buttons manually (which is outside the editor), we need to focus the editor again.
 		this.#editor?.monacoEditor?.focus();
-	}
-
-	async #insertMedia() {
-		const selection = this.#editor?.getSelections()[0];
-		if (!selection) return;
-
-		const alt = this.#editor?.getValueInRange(selection) || 'enter image description here';
-
-		this._focusEditor(); // Focus before opening modal, otherwise cannot regain focus back after modal
-
-		const modalManager = await this.getContext(UMB_MODAL_MANAGER_CONTEXT);
-		const modalContext = modalManager.open(this, UMB_MEDIA_PICKER_MODAL);
-
-		modalContext
-			?.onSubmit()
-			.then(async (value) => {
-				if (!value) return;
-
-				const uniques = value.selection;
-				const { data: mediaUrls } = await this.#mediaUrlRepository.requestItems(uniques);
-				const mediaUrl = mediaUrls?.length ? (mediaUrls[0].url ?? 'URL') : 'URL';
-
-				this.#editor?.monacoEditor?.executeEdits('', [
-					{
-						range: selection,
-						text: `![${alt}](${mediaUrl})`,
-					},
-				]);
-
-				this.#editor?.select({
-					startColumn: selection.startColumn + 2,
-					endColumn: selection.startColumn + alt.length + 2, // +2 because of ![
-					endLineNumber: selection.startLineNumber,
-					startLineNumber: selection.startLineNumber,
-				});
-			})
-			.catch(() => undefined)
-			.finally(() => this._focusEditor());
 	}
 
 	private _insertLine() {
@@ -432,7 +384,7 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 
 	override render() {
 		return html`
-			${this.#renderToolbar()}
+			<div id="toolbar">${this.#renderToolbar()}</div>
 
 			<umb-code-editor
 				language="markdown"
@@ -452,7 +404,7 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 	#renderToolbar() {
 		if (this.readonly) return nothing;
 		return html`
-			<div id="toolbar">
+			<div id="buttons">
 				<div id="buttons">
 					<uui-button-group>
 						<uui-button
@@ -507,6 +459,7 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 							<uui-icon name="icon-bulleted-list"></uui-icon>
 						</uui-button>
 					</uui-button-group>
+
 					<uui-button-group>
 						<uui-button
 							compact
@@ -523,14 +476,6 @@ export class UmbInputMarkdownElement extends UmbFormControlMixin(UmbLitElement, 
 							title="Horizontal Rule"
 							@click=${() => this.#editor?.monacoEditor?.getAction('line')?.run()}>
 							<uui-icon name="icon-horizontal-rule"></uui-icon>
-						</uui-button>
-						<uui-button
-							compact
-							look="default"
-							label="Image"
-							title="Image"
-							@click=${() => this.#editor?.monacoEditor?.getAction('image')?.run()}>
-							<uui-icon name="icon-picture"></uui-icon>
 						</uui-button>
 					</uui-button-group>
 

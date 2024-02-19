@@ -232,6 +232,7 @@ export class UmbContentTypeDesignEditorPropertyElement extends UmbLitElement {
 							name="description"
 							id="description-input"
 							placeholder=${this.localize.term('placeholders_enterDescription')}
+							auto-height
 							.value=${this.property.description}
 							@input=${(e: CustomEvent) => {
 								if (e.target) this.#singleValueUpdate('description', (e.target as HTMLInputElement).value);
@@ -437,7 +438,10 @@ export class UmbContentTypeDesignEditorPropertyElement extends UmbLitElement {
 
 			#description-input {
 				--uui-textarea-border-color: transparent;
-				font-weight: 0.5rem; /* TODO: Cant change font size of UUI textarea yet */
+				font-size: 12px; /* TODO: Cant change font size of UUI textarea yet */
+			}
+			#description-input:focus {
+				--uui-textarea-border-color: inherit;
 			}
 
 			.types > div uui-icon,
