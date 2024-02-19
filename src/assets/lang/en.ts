@@ -2558,8 +2558,8 @@ export default {
 		searchResults: 'items returned',
 	},
 	propertyEditorPicker: {
-		title: 'Select Property Editor',
-		openPropertyEditorPicker: 'Select Property Editor',
+		title: 'Select a property editor',
+		openPropertyEditorPicker: 'Select a property editor',
 	},
 	analytics: {
 		consentForAnalytics: 'Consent for telemetry data',

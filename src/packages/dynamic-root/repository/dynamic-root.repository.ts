@@ -15,7 +15,9 @@ export class UmbDynamicRootRepository extends UmbControllerBase {
 		this.#dataSource = new UmbDynamicRootServerDataSource(host);
 	}
 
-	async postDynamicRootQuery(query: UmbTreePickerDynamicRoot, entityId: string, parentId?: string) {
+	async postDynamicRootQuery(query: UmbTreePickerDynamicRoot | undefined, entityId: string, parentId?: string | null) {
+		if (!query) return null;
+
 		const model: DynamicRootRequestModel = {
 			context: {
 				id: entityId,

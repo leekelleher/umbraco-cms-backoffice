@@ -1,11 +1,24 @@
-import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import { css, html, nothing, customElement, property, state, repeat } from '@umbraco-cms/backoffice/external/lit';
-import type { UmbRoute, UmbRouterSlotInitEvent, UmbRouterSlotChangeEvent } from '@umbraco-cms/backoffice/router';
-import type { ManifestWorkspaceView } from '@umbraco-cms/backoffice/extension-registry';
+import { css, customElement, html, nothing, property, repeat, state } from '@umbraco-cms/backoffice/external/lit';
+import { createExtensionElement, UmbExtensionsManifestInitializer } from '@umbraco-cms/backoffice/extension-api';
 import { umbExtensionsRegistry } from '@umbraco-cms/backoffice/extension-registry';
-import { UmbExtensionsManifestInitializer, createExtensionElement } from '@umbraco-cms/backoffice/extension-api';
-
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
+import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
+import type { ManifestWorkspaceView } from '@umbraco-cms/backoffice/extension-registry';
+import type { UmbRoute, UmbRouterSlotInitEvent, UmbRouterSlotChangeEvent } from '@umbraco-cms/backoffice/router';
+
+import { UmbContextToken } from '@umbraco-cms/backoffice/context-api';
+import { UmbContextBase } from '@umbraco-cms/backoffice/class-api';
+import type { UmbControllerHost } from '@umbraco-cms/backoffice/controller-api';
+
+export const UMB_WORKSPACE_EDITOR_CONTEXT = new UmbContextToken<UmbWorkspaceEditorContext>(
+	'UmbWorkspaceEditorContext',
+);
+
+export class UmbWorkspaceEditorContext extends UmbContextBase<UmbWorkspaceEditorContext> {
+	constructor(host: UmbControllerHost) {
+		super(host, UMB_WORKSPACE_EDITOR_CONTEXT);
+	}
+}
 
 /**
  * @element umb-workspace-editor
@@ -46,6 +59,8 @@ export class UmbWorkspaceEditorElement extends UmbLitElement {
 
 	@state()
 	private _activePath?: string;
+
+	editorContext = new UmbWorkspaceEditorContext(this);
 
 	constructor() {
 		super();
@@ -92,14 +107,7 @@ export class UmbWorkspaceEditorElement extends UmbLitElement {
 				<slot name="action-menu" slot="action-menu"></slot>
 				${this.#renderRoutes()}
 				<slot></slot>
-				${this.enforceNoFooter
-					? ''
-					: html`
-							<umb-workspace-footer slot="footer">
-								<slot name="footer-info"></slot>
-								<slot name="actions" slot="actions"></slot>
-							</umb-workspace-footer>
-						`}
+				${this.#renderFooter()}
 			</umb-body-layout>
 		`;
 	}
@@ -116,8 +124,8 @@ export class UmbWorkspaceEditorElement extends UmbLitElement {
 									<uui-tab
 										.label="${view.meta.label ? this.localize.string(view.meta.label) : view.name}"
 										href="${this._routerPath}/view/${view.meta.pathname}"
-										?active="${'view/' + view.meta.pathname === this._activePath}">
-										<umb-icon slot="icon" name="${view.meta.icon}"></umb-icon>
+										?active=${'view/' + view.meta.pathname === this._activePath}>
+										<umb-icon slot="icon" name=${view.meta.icon}></umb-icon>
 										${view.meta.label ? this.localize.string(view.meta.label) : view.name}
 									</uui-tab>
 								`,
@@ -143,20 +151,27 @@ export class UmbWorkspaceEditorElement extends UmbLitElement {
 	}
 
 	#renderRoutes() {
+		if (!this._routes || this._routes.length === 0) return nothing;
 		return html`
-			${this._routes && this._routes.length > 0
-				? html`
-						<umb-router-slot
-							id="router-slot"
-							.routes="${this._routes}"
-							@init=${(event: UmbRouterSlotInitEvent) => {
-								this._routerPath = event.target.absoluteRouterPath;
-							}}
-							@change=${(event: UmbRouterSlotChangeEvent) => {
-								this._activePath = event.target.localActiveViewPath;
-							}}></umb-router-slot>
-					`
-				: nothing}
+			<umb-router-slot
+				id="router-slot"
+				.routes=${this._routes}
+				@init=${(event: UmbRouterSlotInitEvent) => {
+					this._routerPath = event.target.absoluteRouterPath;
+				}}
+				@change=${(event: UmbRouterSlotChangeEvent) => {
+					this._activePath = event.target.localActiveViewPath;
+				}}></umb-router-slot>
+		`;
+	}
+
+	#renderFooter() {
+		if (this.enforceNoFooter) return nothing;
+		return html`
+			<umb-workspace-footer slot="footer">
+				<slot name="footer-info"></slot>
+				<slot name="actions" slot="actions"></slot>
+			</umb-workspace-footer>
 		`;
 	}
 

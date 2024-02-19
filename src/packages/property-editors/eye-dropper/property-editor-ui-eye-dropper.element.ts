@@ -26,8 +26,9 @@ export class UmbPropertyEditorUIEyeDropperElement extends UmbLitElement implemen
 
 		const showPalette = config?.getValueByAlias('showPalette') ?? false;
 
-		if (showPalette) {
+		if (!showPalette) {
 			// TODO: This is a temporary solution until we have a proper way to get the palette from the config. [LK]
+			// NOTE: Duplicated from: https://github.com/umbraco/Umbraco.UI/blob/v1.8.0-rc.3/packages/uui-color-picker/lib/uui-color-picker.element.ts#L157-L174
 			this._swatches = [
 				'#d0021b',
 				'#f5a623',

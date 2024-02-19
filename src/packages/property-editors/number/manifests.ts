@@ -6,7 +6,7 @@ import type { ManifestTypes } from '@umbraco-cms/backoffice/extension-registry';
 const allowDecimalsConfig = {
 	alias: 'allowDecimals',
 	label: 'Allow decimals',
-	propertyEditorUiAlias: 'Umb.PropertyEditorUi.Toggle',
+	propertyEditorUiAlias: 'Umb.PropertyEditorUi.Label',
 };
 
 export const manifests: Array<ManifestTypes> = [

@@ -27,9 +27,9 @@ export class UmbPropertyEditorUIMarkdownEditorElement extends UmbLitElement impl
 		this._overlaySize = config?.getValueByAlias('overlaySize') ?? undefined;
 	}
 
-	#onChange(e: Event) {
-		this.value = (e.target as UmbInputMarkdownElement).value as string;
-		this.dispatchEvent(new CustomEvent('property-value-change'));
+	#onChange(event: Event & { target: UmbInputMarkdownElement }) {
+		this.value = event.target.value as string;
+		this.dispatchEvent(new UmbPropertyValueChangeEvent());
 	}
 
 	render() {
@@ -37,7 +37,7 @@ export class UmbPropertyEditorUIMarkdownEditorElement extends UmbLitElement impl
 			?preview=${this._preview}
 			.overlaySize=${this._overlaySize}
 			@change=${this.#onChange}
-			.value=${this.value}></umb-input-markdown>`;
+			.value=${this.value as any}></umb-input-markdown>`;
 	}
 }
 

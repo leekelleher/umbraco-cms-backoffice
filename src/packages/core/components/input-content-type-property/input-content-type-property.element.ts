@@ -57,7 +57,12 @@ export class UmbInputContentTypePropertyElement extends UUIFormControlMixin(UmbL
 					value: 'createDate',
 					icon: 'icon-settings',
 				},
-				{ label: this.localize.term('content_createBy'), description: 'owner', value: 'owner', icon: 'icon-settings' },
+				{
+					label: this.localize.term('content_createBy'),
+					description: 'creator',
+					value: 'creator',
+					icon: 'icon-settings',
+				},
 				{
 					label: this.localize.term('content_isPublished'),
 					description: 'published',
@@ -124,7 +129,12 @@ export class UmbInputContentTypePropertyElement extends UUIFormControlMixin(UmbL
 					value: 'createDate',
 					icon: 'icon-settings',
 				},
-				{ label: this.localize.term('content_createBy'), description: 'owner', value: 'owner', icon: 'icon-settings' },
+				{
+					label: this.localize.term('content_createBy'),
+					description: 'creator',
+					value: 'creator',
+					icon: 'icon-settings',
+				},
 				{
 					label: this.localize.term('general_sort'),
 					description: 'sortOrder',

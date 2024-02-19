@@ -1,23 +1,22 @@
-import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import type { TemplateResult } from '@umbraco-cms/backoffice/external/lit';
-import { css, html, nothing, customElement, property, state, repeat } from '@umbraco-cms/backoffice/external/lit';
-
-import type { DebugContextData, DebugContextItemData } from '@umbraco-cms/backoffice/context-api';
+import { css, customElement, html, nothing, property, repeat, state, when } from '@umbraco-cms/backoffice/external/lit';
 import { contextData, UmbContextDebugRequest } from '@umbraco-cms/backoffice/context-api';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import type { UmbModalManagerContext } from '@umbraco-cms/backoffice/modal';
+import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 import { UMB_CONTEXT_DEBUGGER_MODAL, UMB_MODAL_MANAGER_CONTEXT } from '@umbraco-cms/backoffice/modal';
+import type { DebugContextData, DebugContextItemData } from '@umbraco-cms/backoffice/context-api';
+import type { TemplateResult } from '@umbraco-cms/backoffice/external/lit';
+import type { UmbModalManagerContext } from '@umbraco-cms/backoffice/modal';
 
 @customElement('umb-debug')
 export class UmbDebugElement extends UmbLitElement {
-	@property({ reflect: true, type: Boolean })
+	@property({ type: Boolean })
 	visible = false;
 
-	@property({ reflect: true, type: Boolean })
+	@property({ type: Boolean })
 	dialog = false;
 
 	@state()
-	contextData = Array<DebugContextData>();
+	private _contextData = Array<DebugContextData>();
 
 	@state()
 	private _debugPaneOpen = false;
@@ -31,16 +30,7 @@ export class UmbDebugElement extends UmbLitElement {
 		});
 	}
 
-	render() {
-		if (this.visible) {
-			return this.dialog ? this._renderDialog() : this._renderPanel();
-		} else {
-			return nothing;
-		}
-	}
-
 	private _update() {
-		// Dispatch it
 		this.dispatchEvent(
 			new UmbContextDebugRequest((contexts: Map<any, any>) => {
 				// The Contexts are collected
@@ -51,13 +41,13 @@ export class UmbDebugElement extends UmbLitElement {
 
 				// Massage the data into a simplier array of objects
 				// From a function in the context-api '
-				this.contextData = contextData(contexts);
-				this.requestUpdate('contextData');
+				this._contextData = contextData(contexts);
+				this.requestUpdate('_contextData');
 			}),
 		);
 	}
 
-	private _toggleDebugPane() {
+	#toggleDebugPane() {
 		this._debugPaneOpen = !this._debugPaneOpen;
 		if (this._debugPaneOpen) {
 			this._update();
@@ -65,72 +55,72 @@ export class UmbDebugElement extends UmbLitElement {
 	}
 
 	private _openDialog() {
-
 		this._update();
 
 		this._modalContext?.open(this, UMB_CONTEXT_DEBUGGER_MODAL, {
 			data: {
-				content: html`${this._renderContextAliases()}`,
+				content: html`${this.#renderContextAliases()}`,
 			},
 		});
 	}
 
-	private _renderDialog() {
+	render() {
+		if (!this.visible) return nothing;
+		return this.dialog ? this.#renderDialog() : this.#renderPanel();
+	}
+
+	#renderDialog() {
 		return html`
-		<div id="container">
-			<uui-badge color="danger" look="primary" attention @click="${this._openDialog}">
-				<uui-icon name="icon-bug"></uui-icon>&nbsp;Debug
-			</uui-badge>
-		</div>`;
-	}
-
-	private _renderPanel() {
-		return html` <div id="container">
-			<uui-button color="danger" look="primary" @click="${this._toggleDebugPane}">
-				<uui-icon name="icon-bug"></uui-icon>
-				Debug
-			</uui-button>
-
-			<div class="events ${this._debugPaneOpen ? 'open' : ''}">
-				<div>
-					<ul>
-						${this._renderContextAliases()}
-					</ul>
-				</div>
+			<div>
+				<uui-badge color="danger" look="primary" @click=${this._openDialog}>
+					<uui-icon name="icon-bug"></uui-icon>
+					<span>Debug</span>
+				</uui-badge>
 			</div>
-		</div>`;
+		`;
 	}
 
-	private _renderContextAliases() {
+	#renderPanel() {
+		return html`
+			<div id="container">
+				<uui-button color="danger" look="primary" @click=${this.#toggleDebugPane}>
+					<uui-icon name="icon-bug"></uui-icon>
+					<span>Debug</span>
+				</uui-button>
+				${when(this._debugPaneOpen, () => html`<div class="events">${this.#renderContextAliases()}</div>`)}
+			</div>
+		`;
+	}
+
+	#renderContextAliases() {
 		return repeat(
-			this.contextData,
-			(contextData) => contextData.alias,
-			(contextData) => {
-				return html` <li>
-					Context: <strong>${contextData.alias}</strong>
-					<em>(${contextData.type})</em>
-					<ul>
-						${this._renderInstance(contextData.data)}
-					</ul>
-				</li>`;
+			this._contextData,
+			(context) => context.alias,
+			(context) => {
+				return html`
+					<details>
+						<summary><strong>${context.alias}</strong></summary>
+						${this.#renderInstance(context.data)}
+					</details>
+				`;
 			},
 		);
 	}
 
-	private _renderInstance(instance: DebugContextItemData) {
+	#renderInstance(instance: DebugContextItemData) {
 		const instanceTemplates: TemplateResult[] = [];
 
 		if (instance.type === 'function') {
-			return instanceTemplates.push(html`<li>Callable Function</li>`);
+			return instanceTemplates.push(html`<h3>Callable Function</h3>`);
 		} else if (instance.type === 'object') {
 			if (instance.methods?.length) {
 				instanceTemplates.push(html`
-					<li>
-						<strong>Methods</strong>
+					<details>
+						<summary>Methods</summary>
 						<ul>
 							${instance.methods?.map((methodName) => html`<li>${methodName}</li>`)}
 						</ul>
-					</li>
+					</details>
 				`);
 			}
 
@@ -151,15 +141,15 @@ export class UmbDebugElement extends UmbLitElement {
 			});
 
 			instanceTemplates.push(html`
-				<li>
-					<strong>Properties</strong>
+				<details>
+					<summary>Properties</summary>
 					<ul>
 						${props}
 					</ul>
-				</li>
+				</details>
 			`);
 		} else if (instance.type === 'primitive') {
-			instanceTemplates.push(html`<li>Context is a primitive with value: ${instance.value}</li>`);
+			instanceTemplates.push(html`<p>Context is a primitive with value: ${instance.value}</p>`);
 		}
 
 		return instanceTemplates;
@@ -170,21 +160,20 @@ export class UmbDebugElement extends UmbLitElement {
 		css`
 			:host {
 				float: right;
+				font-family: monospace;
+				position: relative;
+				z-index: 10000;
 			}
 
 			#container {
-				display: block;
-				font-family: monospace;
-
-				z-index: 10000;
-
-				position: relative;
-				width: 100%;
-				padding: 10px 0;
+				display: flex;
+				flex-direction: column;
+				align-items: flex-end;
 			}
 
 			uui-badge {
 				cursor: pointer;
+				gap: 0.5rem;
 			}
 
 			uui-icon {
@@ -194,22 +183,19 @@ export class UmbDebugElement extends UmbLitElement {
 			.events {
 				background-color: var(--uui-color-danger);
 				color: var(--uui-color-selected-contrast);
-				max-height: 0;
-				transition: max-height 0.25s ease-out;
-				overflow: hidden;
+				padding: 1rem;
 			}
 
-			.events.open {
-				max-height: 500px;
-				overflow: auto;
+			summary {
+				cursor: pointer;
 			}
 
-			.events > div {
-				padding: 10px;
+			details > details {
+				margin-left: 1rem;
 			}
 
-			h4 {
-				margin: 0;
+			ul {
+				margin-top: 0;
 			}
 		`,
 	];

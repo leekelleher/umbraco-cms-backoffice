@@ -14,13 +14,19 @@ export class UmbPropertyEditorUISelectElement extends UmbLitElement implements U
 	value?: string = '';
 
 	@state()
-	private _list: Array<Option> = [];
+	private _options: Array<Option> = [];
 
 	public set config(config: UmbPropertyEditorConfigCollection | undefined) {
 		if (!config) return;
 
-		const listData = config.getValueByAlias<string[]>('items');
-		this._list = listData?.map((option) => ({ value: option, name: option, selected: option === this.value })) ?? [];
+		const items = config.getValueByAlias('items');
+
+		if (Array.isArray(items) && items.length > 0) {
+			this._options =
+				typeof items[0] === 'string'
+					? items.map((item) => ({ value: item, name: item, selected: item === this.value }))
+					: items.map((item) => ({ value: item.value, name: item.name, selected: item.value === this.value }));
+		}
 	}
 
 	#onChange(event: UUISelectEvent) {
@@ -29,7 +35,7 @@ export class UmbPropertyEditorUISelectElement extends UmbLitElement implements U
 	}
 
 	render() {
-		return html`<uui-select .options=${this._list} @change=${this.#onChange}></uui-select>`;
+		return html`<uui-select .options=${this._options} @change=${this.#onChange}></uui-select>`;
 	}
 }
 

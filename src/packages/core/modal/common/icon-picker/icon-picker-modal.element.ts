@@ -109,12 +109,12 @@ export class UmbIconPickerModalElement extends UmbModalBaseElement<UmbIconPicker
 				<uui-button
 					slot="actions"
 					label=${this.localize.term('general_close')}
-					@click="${this._rejectModal}"></uui-button>
+					@click=${this._rejectModal}></uui-button>
 				<uui-button
 					slot="actions"
 					color="positive"
 					look="primary"
-					@click="${this._submitModal}"
+					@click=${this._submitModal}
 					label=${this.localize.term('general_submit')}></uui-button>
 			</umb-body-layout>
 		`;
@@ -126,7 +126,7 @@ export class UmbIconPickerModalElement extends UmbModalBaseElement<UmbIconPicker
 			placeholder=${this.localize.term('placeholders_filter')}
 			label=${this.localize.term('placeholders_filter')}
 			id="search"
-			@keyup="${this.#filterIcons}"
+			@keyup=${this.#filterIcons}
 			${umbFocus()}>
 			<uui-icon name="search" slot="prepend" id="search_icon"></uui-icon>
 		</uui-input>`;
@@ -139,13 +139,14 @@ export class UmbIconPickerModalElement extends UmbModalBaseElement<UmbIconPicker
 					(icon) => icon.name,
 					(icon) => html`
 						<uui-button
-							label="${icon.name}"
-							class="${icon.name === this._currentIcon ? 'selected' : ''}"
-							@click="${this.#changeIcon}"
-							@keyup="${this.#changeIcon}">
+							title=${icon.name}
+							label=${icon.name}
+							class=${icon.name === this._currentIcon ? 'selected' : ''}
+							@click=${this.#changeIcon}
+							@keyup=${this.#changeIcon}>
 							<uui-icon
 								style="--uui-icon-color: var(${extractUmbColorVariable(this._currentColor)})"
-								name="${icon.name}">
+								name=${icon.name}>
 							</uui-icon>
 						</uui-button>
 					`,

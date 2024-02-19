@@ -19,11 +19,21 @@ export class UmbPropertyEditorUIMultiUrlPickerElement extends UmbLitElement impl
 	public set config(config: UmbPropertyEditorConfigCollection | undefined) {
 		if (!config) return;
 
-		this._hideAnchor = config.getValueByAlias('hideAnchor') ?? false;
+		this._hideAnchor = config.getValueByAlias<boolean>('hideAnchor') ?? false;
 		this._ignoreUserStartNodes = config.getValueByAlias<boolean>('ignoreUserStartNodes') ?? false;
-		this._minNumber = Number(config.getValueByAlias('minNumber')) ?? 0;
-		this._maxNumber = Number(config.getValueByAlias('maxNumber')) ?? Infinity;
 		this._overlaySize = config.getValueByAlias<UUIModalSidebarSize>('overlaySize') ?? 'small';
+
+		this.min =
+			config.getValueByAlias('minNumber', (value) => {
+				const num = Number(value);
+				return num > 0 ? num : 0;
+			}) ?? 0;
+
+		this.max =
+			config.getValueByAlias('maxNumber', (value) => {
+				const num = Number(value);
+				return num > 0 ? num : Infinity;
+			}) ?? Infinity;
 	}
 
 	@state()
@@ -36,10 +46,10 @@ export class UmbPropertyEditorUIMultiUrlPickerElement extends UmbLitElement impl
 	private _ignoreUserStartNodes?: boolean;
 
 	@state()
-	private _minNumber? = 0;
+	min = 0;
 
 	@state()
-	private _maxNumber? = Infinity;
+	max = Infinity;
 
 	@state()
 	private _alias?: string;
@@ -66,8 +76,8 @@ export class UmbPropertyEditorUIMultiUrlPickerElement extends UmbLitElement impl
 			<umb-input-multi-url
 				.alias=${this._alias}
 				.ignoreUserStartNodes=${this._ignoreUserStartNodes}
-				.max=${this._maxNumber}
-				.min=${this._minNumber}
+				.min=${this.min}
+				.max=${this.max}
 				.overlaySize=${this._overlaySize}
 				.urls=${this.value ?? []}
 				.variantId=${this._variantId}

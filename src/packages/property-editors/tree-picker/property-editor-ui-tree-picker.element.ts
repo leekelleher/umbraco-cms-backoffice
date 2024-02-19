@@ -1,4 +1,5 @@
 import { html, customElement, property, state } from '@umbraco-cms/backoffice/external/lit';
+import { observeMultiple } from '@umbraco-cms/backoffice/observable-api';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UmbDynamicRootRepository } from '@umbraco-cms/backoffice/dynamic-root';
 import { UmbPropertyValueChangeEvent } from '@umbraco-cms/backoffice/property-editor';
@@ -7,6 +8,7 @@ import type { UmbInputTreeElement } from '@umbraco-cms/backoffice/tree';
 import type { UmbPropertyEditorConfigCollection } from '@umbraco-cms/backoffice/property-editor';
 import type { UmbPropertyEditorUiElement } from '@umbraco-cms/backoffice/extension-registry';
 import type { UmbTreePickerSource } from '@umbraco-cms/backoffice/components';
+import type { UmbDocumentWorkspaceContext } from '@umbraco-cms/backoffice/document';
 
 /**
  * @element umb-property-editor-ui-tree-picker
@@ -41,6 +43,8 @@ export class UmbPropertyEditorUITreePickerElement extends UmbLitElement implemen
 
 	#dynamicRootRepository = new UmbDynamicRootRepository(this);
 
+	#workspaceContext?: typeof UMB_ENTITY_WORKSPACE_CONTEXT.TYPE;
+
 	public set config(config: UmbPropertyEditorConfigCollection | undefined) {
 		if (!config) return;
 
@@ -59,6 +63,14 @@ export class UmbPropertyEditorUITreePickerElement extends UmbLitElement implemen
 		this.ignoreUserStartNodes = config.getValueByAlias('ignoreUserStartNodes');
 	}
 
+	constructor() {
+		super();
+
+		this.consumeContext(UMB_ENTITY_WORKSPACE_CONTEXT, (workspaceContext) => {
+			this.#workspaceContext = workspaceContext;
+		});
+	}
+
 	connectedCallback() {
 		super.connectedCallback();
 
@@ -67,17 +79,27 @@ export class UmbPropertyEditorUITreePickerElement extends UmbLitElement implemen
 
 	async #setStartNodeId() {
 		if (this.startNodeId) return;
+		if (this.type !== 'content') return;
 
-		// TODO: Awaiting the workspace context to have a parent entity ID value. [LK]
-		// e.g. const parentEntityId = this.#workspaceContext?.getParentEntityId();
-		const workspaceContext = await this.getContext(UMB_ENTITY_WORKSPACE_CONTEXT);
-		const unique = workspaceContext.getUnique();
-		if (unique && this.#dynamicRoot) {
-			const result = await this.#dynamicRootRepository.postDynamicRootQuery(this.#dynamicRoot, unique);
-			if (result && result.length > 0) {
-				this.startNodeId = result[0];
-			}
-		}
+		// NOTE: Since the `startNode` can only be configured for documents (content),
+		// then we can assume the workspace context is a document workspace context. [LK]
+		const documentWorkspaceContext = this.#workspaceContext as UmbDocumentWorkspaceContext;
+		if (!documentWorkspaceContext) return;
+		this.observe(
+			observeMultiple([documentWorkspaceContext.unique, documentWorkspaceContext.parentUnique]),
+			async ([unique, parentUnique]) => {
+				if (unique) {
+					const result = await this.#dynamicRootRepository.postDynamicRootQuery(
+						this.#dynamicRoot,
+						unique,
+						parentUnique,
+					);
+					if (result && result.length > 0) {
+						this.startNodeId = result[0];
+					}
+				}
+			},
+		);
 	}
 
 	#onChange(event: CustomEvent & { target: UmbInputTreeElement }) {

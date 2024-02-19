@@ -1,6 +1,5 @@
 import { manifest as colorEditor } from './color-swatches-editor/manifests.js';
 import { manifest as numberRange } from './number-range/manifests.js';
-import { manifest as orderDirection } from './order-direction/manifests.js';
 import { manifest as overlaySize } from './overlay-size/manifests.js';
 import { manifest as select } from './select/manifests.js';
 import { manifest as valueType } from './value-type/manifests.js';
@@ -45,7 +44,6 @@ export const manifests: Array<ManifestTypes> = [
 	...uploadFieldManifests,
 	colorEditor,
 	numberRange,
-	orderDirection,
 	overlaySize,
 	select,
 	valueType,

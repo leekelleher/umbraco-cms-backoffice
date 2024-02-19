@@ -1,14 +1,11 @@
 import type { UmbDocumentCollectionItemModel } from '../../../types.js';
-import { css, customElement, html, property, state } from '@umbraco-cms/backoffice/external/lit';
+import { css, customElement, html, property } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UMB_WORKSPACE_MODAL, UmbModalRouteRegistrationController } from '@umbraco-cms/backoffice/modal';
-import type { UmbTableColumn, UmbTableColumnLayoutElement, UmbTableItem } from '@umbraco-cms/backoffice/components';
+import type { UmbTableColumnLayoutElement, UmbTableColumn, UmbTableItem } from '@umbraco-cms/backoffice/components';
 
 @customElement('umb-document-table-column-name')
 export class UmbDocumentTableColumnNameElement extends UmbLitElement implements UmbTableColumnLayoutElement {
-	@state()
-	private _editDocumentPath = '';
-
 	@property({ type: Object, attribute: false })
 	column!: UmbTableColumn;
 
@@ -18,23 +15,26 @@ export class UmbDocumentTableColumnNameElement extends UmbLitElement implements 
 	@property({ attribute: false })
 	value!: UmbDocumentCollectionItemModel;
 
+	#documentEditorModal: UmbModalRouteRegistrationController;
+
 	constructor() {
 		super();
 
-		new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
-			.addAdditionalPath('document')
-			.onSetup(() => {
-				return { data: { entityType: 'document', preset: {} } };
+		this.#documentEditorModal = new UmbModalRouteRegistrationController(this, UMB_WORKSPACE_MODAL)
+			.addAdditionalPath('document/edit/:unique')
+			.onSetup((params) => {
+				console.log('onSetup', params);
+				return { data: { entityType: 'document', preset: { unique: params.unique } } };
 			})
-			.observeRouteBuilder((routeBuilder) => {
-				this._editDocumentPath = routeBuilder({});
+			.onSubmit((value) => {
+				console.log('onSubmit', value);
 			});
 	}
 
 	#onClick(event: Event) {
-		// TODO: [LK] Review the `stopPropagation` usage, as it causes a page reload.
-		// But we still need a say to prevent the `umb-table` from triggering a selection event.
 		event.stopPropagation();
+
+		this.#documentEditorModal?.open({ unique: this.value.unique });
 	}
 
 	render() {
@@ -42,8 +42,7 @@ export class UmbDocumentTableColumnNameElement extends UmbLitElement implements 
 			look="default"
 			color="default"
 			compact
-			href="${this._editDocumentPath}edit/${this.value.unique}"
-			label="${this.value.name}"
+			label=${this.value.name}
 			@click=${this.#onClick}></uui-button>`;
 	}
 
