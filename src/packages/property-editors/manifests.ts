@@ -1,4 +1,5 @@
 import { manifest as colorEditor } from './color-swatches-editor/manifests.js';
+import { manifest as combobox } from './combobox/manifests.js';
 import { manifest as numberRange } from './number-range/manifests.js';
 import { manifest as orderDirection } from './order-direction/manifests.js';
 import { manifest as overlaySize } from './overlay-size/manifests.js';
@@ -44,6 +45,7 @@ export const manifests: Array<ManifestTypes> = [
 	...contentPickerManifests,
 	...uploadFieldManifests,
 	colorEditor,
+	combobox,
 	numberRange,
 	orderDirection,
 	overlaySize,
