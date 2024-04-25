@@ -58,6 +58,7 @@ import { UmbDocumentBlueprintDetailRepository } from '@umbraco-cms/backoffice/do
 import { UMB_NOTIFICATION_CONTEXT } from '@umbraco-cms/backoffice/notification';
 import type { UmbContentWorkspaceContext } from '@umbraco-cms/backoffice/content';
 import type { UmbDocumentTypeDetailModel } from '@umbraco-cms/backoffice/document-type';
+import { UmbDocumentPreviewRepository } from '../repository/preview/index.js';
 
 type EntityType = UmbDocumentDetailModel;
 export class UmbDocumentWorkspaceContext
@@ -597,6 +598,24 @@ export class UmbDocumentWorkspaceContext
 		}
 	}
 
+	async #handleSaveAndPreview() {
+		const unique = this.getUnique();
+		if (!unique) throw new Error('Unique is missing');
+
+		// TODO: [LK] Save document. Check if the user has permission to save the document.
+
+		// Tell the server that we're entering preview mode.
+		await new UmbDocumentPreviewRepository(this).enter();
+
+		const preview = window.open(`preview?id=${unique}&culture=en-US`, 'umbpreview');
+		if (preview) {
+			preview.addEventListener('load', () => {
+				preview.location.href = preview.document.URL;
+			});
+			preview.focus();
+		}
+	}
+
 	async #handleSaveAndPublish() {
 		const unique = this.getUnique();
 		if (!unique) throw new Error('Unique is missing');
@@ -723,6 +742,10 @@ export class UmbDocumentWorkspaceContext
 
 	public async publish() {
 		throw new Error('Method not implemented.');
+	}
+
+	public async saveAndPreview(): Promise<void> {
+		return this.#handleSaveAndPreview();
 	}
 
 	public async saveAndPublish(): Promise<void> {
