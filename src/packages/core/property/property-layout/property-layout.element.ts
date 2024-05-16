@@ -1,4 +1,6 @@
-import { css, html, LitElement, customElement, property } from '@umbraco-cms/backoffice/external/lit';
+import { UmbLabelTemplateController } from '../../../../libs/label-template-api/index.js';
+import { css, customElement, html, property, unsafeHTML, when } from '@umbraco-cms/backoffice/external/lit';
+import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 
 /**
@@ -9,7 +11,10 @@ import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
  *  @slot action-menu - Slot for rendering the Property Action Menu
  */
 @customElement('umb-property-layout')
-export class UmbPropertyLayoutElement extends LitElement {
+export class UmbPropertyLayoutElement extends UmbLitElement {
+
+	#labelTemplate: UmbLabelTemplateController = new UmbLabelTemplateController(this);
+
 	/**
 	 * Alias. The technical name of the property.
 	 * @type {string}
@@ -61,10 +66,10 @@ export class UmbPropertyLayoutElement extends LitElement {
 		return html`
 			<div id="headerColumn">
 				<uui-label title=${this.alias}>
-					${this.label} ${this.invalid ? html`<uui-badge color="danger" attention>!</uui-badge>` : ''}
+					${this.label} ${when(this.invalid, () => html`<uui-badge color="danger" attention>!</uui-badge>`)}
 				</uui-label>
 				<slot name="action-menu"></slot>
-				<div id="description">${this.description}</div>
+				<div id="description">${unsafeHTML(this.#labelTemplate.transform(this.description, this))}</div>
 				<slot name="description"></slot>
 			</div>
 			<div id="editorColumn">
