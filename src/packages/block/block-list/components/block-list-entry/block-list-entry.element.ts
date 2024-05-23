@@ -6,6 +6,7 @@ import '../ref-list-block/index.js';
 import '../inline-list-block/index.js';
 import type { UmbBlockViewPropsType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockListLayoutModel } from '@umbraco-cms/backoffice/block-list';
+import { labelTemplate } from '@umbraco-cms/backoffice/formatting-api';
 
 /**
  * @element umb-block-list-entry
@@ -52,6 +53,9 @@ export class UmbBlockListEntryElement extends UmbLitElement implements UmbProper
 	_workspaceEditSettingsPath?: string;
 
 	@state()
+	private _contentElementTypeName?: string;
+
+	@state()
 	_inlineEditingMode?: boolean;
 
 	// TODO: use this type on the Element Interface for the Manifest.
@@ -86,9 +90,11 @@ export class UmbBlockListEntryElement extends UmbLitElement implements UmbProper
 		});
 		this.observe(this.#context.content, (content) => {
 			this._blockViewProps.content = content;
+			this.requestUpdate('_blockViewProps');
 		});
 		this.observe(this.#context.settings, (settings) => {
 			this._blockViewProps.settings = settings;
+			this.requestUpdate('_blockViewProps');
 		});
 		this.observe(this.#context.workspaceEditContentPath, (path) => {
 			this._workspaceEditContentPath = path;
@@ -100,10 +106,14 @@ export class UmbBlockListEntryElement extends UmbLitElement implements UmbProper
 			this._blockViewProps.urls.editSettings = path;
 			this.requestUpdate('_blockViewProps');
 		});
+		this.observe(this.#context.contentElementTypeName, (contentElementTypeName) => {
+			this._contentElementTypeName = contentElementTypeName;
+		});
 	}
 
 	#renderRefBlock() {
-		return html`<umb-ref-list-block .label=${this._label}></umb-ref-list-block>`;
+		const label = labelTemplate(this._label, {...this._blockViewProps.content, $settings: this._blockViewProps.settings, $contentTypeName: this._contentElementTypeName});
+		return html`<umb-ref-list-block .label=${label}></umb-ref-list-block>`;
 	}
 
 	#renderInlineBlock() {

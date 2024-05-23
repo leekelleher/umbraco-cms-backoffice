@@ -1,15 +1,16 @@
 import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 import {
 	css,
-	html,
-	LitElement,
-	ifDefined,
-	when,
 	customElement,
+	html,
+	ifDefined,
 	property,
-	state,
 	repeat,
+	state,
+	when,
+	LitElement,
 } from '@umbraco-cms/backoffice/external/lit';
+import { labelTemplate } from '@umbraco-cms/backoffice/formatting-api';
 
 // TODO: move to UI Library - entity actions should NOT be moved to UI Library but stay in an UmbTable element
 export interface UmbTableItem {
@@ -31,6 +32,7 @@ export interface UmbTableColumn {
 	width?: string;
 	allowSorting?: boolean;
 	align?: 'left' | 'center' | 'right';
+	labelTemplate?: string;
 }
 
 export interface UmbTableColumnLayoutElement extends HTMLElement {
@@ -263,7 +265,7 @@ export class UmbTableElement extends LitElement {
 			return element;
 		}
 
-		return value;
+		return column.labelTemplate ? labelTemplate(column.labelTemplate, { value }) : value;
 	}
 
 	static styles = [

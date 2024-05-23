@@ -1,6 +1,5 @@
-/* eslint-disable lit/attribute-value-entities */
 import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
-import { css, html, customElement } from '@umbraco-cms/backoffice/external/lit';
+import { css, customElement, html } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 
 @customElement('umb-umbraco-news-dashboard')
@@ -38,7 +37,7 @@ export class UmbUmbracoNewsDashboardElement extends UmbLitElement {
 						<uui-button
 							look="primary"
 							target="_blank"
-							href="https://our.umbraco.com/?utm_source=core&utm_medium=dashboard&utm_content=image&utm_campaign=our"
+							href="https://our.umbraco.com/?utm_source=core&amp;utm_medium=dashboard&amp;utm_content=image&amp;utm_campaign=our"
 							label=${this.localize.term('welcomeDashboard_ourUmbracoButton')}></uui-button>
 					</div>
 				</uui-box>
