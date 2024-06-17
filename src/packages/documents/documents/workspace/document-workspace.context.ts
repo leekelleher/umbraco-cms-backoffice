@@ -241,6 +241,16 @@ export class UmbDocumentWorkspaceContext
 			this.setIsNew(false);
 			this.#persistedData.setValue(data);
 			this.#currentData.setValue(data);
+
+			this._host.getHostElement().dispatchEvent(
+				new CustomEvent('umb:current-user-history', {
+					detail: { icon: 'icon-alert', label: data.variants[0].name, path: location.pathname },
+					composed: true,
+					bubbles: true,
+					cancelable: true,
+				}),
+			);
+
 		}
 
 		this.observe(asObservable(), (entity) => this.#onStoreChange(entity), 'umbDocumentStoreObserver');

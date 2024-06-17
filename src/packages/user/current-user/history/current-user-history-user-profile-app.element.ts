@@ -57,7 +57,7 @@ export class UmbCurrentUserHistoryUserProfileAppElement extends UmbLitElement {
 
 		return html`
 			<uui-ref-node name=${label} detail=${ifDefined(detail)} href=${item.path}>
-				<uui-icon slot="icon" name="icon-link"></uui-icon>
+				<uui-icon slot="icon" name=${item.icon ?? 'icon-link'}></uui-icon>
 			</uui-ref-node>
 		`;
 	}
