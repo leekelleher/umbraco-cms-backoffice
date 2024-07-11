@@ -19,4 +19,13 @@ export const manifests: Array<ManifestUfmComponent> = [
 			marker: '#',
 		},
 	},
+	{
+		type: 'ufmComponent',
+		alias: 'Umb.Markdown.Debug',
+		name: 'Debug UFM Component',
+		api: () => import('./ufm-components/debug.component.js'),
+		meta: {
+			marker: '🐞',
+		},
+	},
 ];
