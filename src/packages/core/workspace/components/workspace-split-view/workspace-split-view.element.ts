@@ -1,5 +1,5 @@
 import { UmbWorkspaceSplitViewContext } from './workspace-split-view.context.js';
-import { css, html, customElement, property, ifDefined } from '@umbraco-cms/backoffice/external/lit';
+import { css, customElement, html, ifDefined, property, when } from '@umbraco-cms/backoffice/external/lit';
 import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 
@@ -43,9 +43,10 @@ export class UmbWorkspaceSplitViewElement extends UmbLitElement {
 				<div id="header" slot="header">
 					<umb-workspace-split-view-variant-selector></umb-workspace-split-view-variant-selector>
 				</div>
-				${this.displayNavigation
-					? html`<umb-workspace-entity-action-menu slot="action-menu"></umb-workspace-entity-action-menu>`
-					: ''}
+				${when(
+					this.displayNavigation,
+					() => html`<umb-workspace-entity-action-menu slot="action-menu"></umb-workspace-entity-action-menu>`,
+				)}
 				<slot name="action-menu" slot="action-menu"></slot>
 			</umb-workspace-editor>
 		`;
