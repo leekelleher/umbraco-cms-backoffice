@@ -16,6 +16,8 @@ export class UmbPropertyEditorUIRadioButtonListElement extends UmbLitElement imp
 	public set config(config: UmbPropertyEditorConfigCollection | undefined) {
 		if (!config) return;
 
+		this._direction = config.getValueByAlias('direction');
+
 		const items = config.getValueByAlias('items');
 
 		if (Array.isArray(items) && items.length > 0) {
@@ -25,6 +27,9 @@ export class UmbPropertyEditorUIRadioButtonListElement extends UmbLitElement imp
 					: items.map((item) => ({ label: item.name, value: item.value }));
 		}
 	}
+
+	@state()
+	private _direction?: UmbInputRadioButtonListElement['direction'];
 
 	@state()
 	private _list: UmbInputRadioButtonListElement['list'] = [];
@@ -37,6 +42,7 @@ export class UmbPropertyEditorUIRadioButtonListElement extends UmbLitElement imp
 	override render() {
 		return html`
 			<umb-input-radio-button-list
+				.direction=${this._direction ?? 'column'}
 				.list=${this._list}
 				.value=${this.value ?? ''}
 				@change=${this.#onChange}></umb-input-radio-button-list>
