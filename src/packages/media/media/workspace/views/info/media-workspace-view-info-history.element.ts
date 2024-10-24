@@ -1,32 +1,37 @@
 import type { UmbMediaAuditLogModel } from '../../../audit-log/types.js';
 import { UmbMediaAuditLogRepository } from '../../../audit-log/index.js';
 import { UMB_MEDIA_WORKSPACE_CONTEXT } from '../../media-workspace.context-token.js';
-import { TimeOptions, getMediaHistoryTagStyleAndText } from './utils.js';
-import { css, html, customElement, state, nothing, repeat } from '@umbraco-cms/backoffice/external/lit';
+import { getMediaHistoryTagStyleAndText, TimeOptions } from './utils.js';
+import { css, customElement, html, nothing, repeat, state, when } from '@umbraco-cms/backoffice/external/lit';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
-import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 import { UmbPaginationManager } from '@umbraco-cms/backoffice/utils';
-import type { UUIPaginationEvent } from '@umbraco-cms/backoffice/external/uui';
-import type { UmbUserItemModel } from '@umbraco-cms/backoffice/user';
+import { UmbRequestReloadStructureForEntityEvent } from '@umbraco-cms/backoffice/entity-action';
+import { UmbTextStyles } from '@umbraco-cms/backoffice/style';
 import { UmbUserItemRepository } from '@umbraco-cms/backoffice/user';
+import { UMB_ACTION_EVENT_CONTEXT } from '@umbraco-cms/backoffice/action';
+import type { UmbUserItemModel } from '@umbraco-cms/backoffice/user';
+import type { UUIPaginationEvent } from '@umbraco-cms/backoffice/external/uui';
 
 @customElement('umb-media-workspace-view-info-history')
 export class UmbMediaWorkspaceViewInfoHistoryElement extends UmbLitElement {
-	@state()
-	_currentPageNumber = 1;
+	#auditLogRepository = new UmbMediaAuditLogRepository(this);
+
+	#pagination = new UmbPaginationManager();
+
+	#workspaceContext?: typeof UMB_MEDIA_WORKSPACE_CONTEXT.TYPE;
+
+	#userItemRepository = new UmbUserItemRepository(this);
+
+	#userMap = new Map<string, UmbUserItemModel>();
 
 	@state()
-	_totalPages = 1;
+	private _currentPageNumber = 1;
 
 	@state()
 	private _items: Array<UmbMediaAuditLogModel> = [];
 
-	#workspaceContext?: typeof UMB_MEDIA_WORKSPACE_CONTEXT.TYPE;
-	#auditLogRepository = new UmbMediaAuditLogRepository(this);
-	#pagination = new UmbPaginationManager();
-	#userItemRepository = new UmbUserItemRepository(this);
-
-	#userMap = new Map<string, UmbUserItemModel>();
+	@state()
+	private _totalPages = 1;
 
 	constructor() {
 		super();
@@ -34,6 +39,12 @@ export class UmbMediaWorkspaceViewInfoHistoryElement extends UmbLitElement {
 		this.#pagination.setPageSize(10);
 		this.observe(this.#pagination.currentPage, (number) => (this._currentPageNumber = number));
 		this.observe(this.#pagination.totalPages, (number) => (this._totalPages = number));
+
+		this.consumeContext(UMB_ACTION_EVENT_CONTEXT, (context) => {
+			context.addEventListener(UmbRequestReloadStructureForEntityEvent.TYPE, () => {
+				this.#requestAuditLogs();
+			});
+		});
 
 		this.consumeContext(UMB_MEDIA_WORKSPACE_CONTEXT, (instance) => {
 			this.#workspaceContext = instance;
@@ -83,87 +94,79 @@ export class UmbMediaWorkspaceViewInfoHistoryElement extends UmbLitElement {
 	}
 
 	override render() {
-		return html`<uui-box>
-			<div id="rollback" slot="header">
-				<h2><umb-localize key="general_history">History</umb-localize></h2>
-			</div>
-			${this._items ? this.#renderHistory() : html`<uui-loader-circle></uui-loader-circle> `}
-			${this.#renderPagination()}
-		</uui-box> `;
+		return html`
+			<uui-box headline=${this.localize.term('general_history')}>
+				${when(
+					this._items,
+					() => this.#renderHistory(),
+					() => html`<div id="loader"><uui-loader></uui-loader></div>`,
+				)}
+				${this.#renderPagination()}
+			</uui-box>
+		`;
 	}
 
 	#renderHistory() {
-		if (this._items && this._items.length) {
-			return html`
-				<umb-history-list>
-					${repeat(
-						this._items,
-						(item) => item.timestamp,
-						(item) => {
-							const { text, style } = getMediaHistoryTagStyleAndText(item.logType);
-							const user = this.#userMap.get(item.user.unique);
+		if (!this._items?.length) return html`${this.localize.term('content_noItemsToShow')}`;
+		return html`
+			<umb-history-list>
+				${repeat(
+					this._items,
+					(item) => item.timestamp,
+					(item) => {
+						const { text, style } = getMediaHistoryTagStyleAndText(item.logType);
+						const user = this.#userMap.get(item.user.unique);
 
-							return html`<umb-history-item
+						return html`
+							<umb-history-item
 								.name=${user?.name ?? 'Unknown'}
 								.detail=${this.localize.date(item.timestamp, TimeOptions)}>
 								<umb-user-avatar
 									slot="avatar"
 									.name=${user?.name}
 									.kind=${user?.kind}
-									.imgUrls=${user?.avatarUrls ?? []}></umb-user-avatar>
-
-								<span class="log-type">
+									.imgUrls=${user?.avatarUrls ?? []}>
+								</umb-user-avatar>
+								<div class="log-type">
 									<uui-tag look=${style.look} color=${style.color}>
 										${this.localize.term(text.label, item.parameters)}
 									</uui-tag>
-									${this.localize.term(text.desc, item.parameters)}
-								</span>
-							</umb-history-item>`;
-						},
-					)}
-				</umb-history-list>
-			`;
-		} else {
-			return html`${this.localize.term('content_noItemsToShow')}`;
-		}
+									<span>${this.localize.term(text.desc, item.parameters)}</span>
+								</div>
+							</umb-history-item>
+						`;
+					},
+				)}
+			</umb-history-list>
+		`;
 	}
 
 	#renderPagination() {
+		if (this._totalPages <= 1) return nothing;
 		return html`
-			${this._totalPages > 1
-				? html`
-						<uui-pagination
-							class="pagination"
-							.current=${this._currentPageNumber}
-							.total=${this._totalPages}
-							@change=${this.#onPageChange}></uui-pagination>
-					`
-				: nothing}
+			<uui-pagination
+				.current=${this._currentPageNumber}
+				.total=${this._totalPages}
+				@change=${this.#onPageChange}></uui-pagination>
 		`;
 	}
 
 	static override styles = [
 		UmbTextStyles,
 		css`
-			uui-loader-circle {
-				font-size: 2rem;
-			}
-
-			uui-tag uui-icon {
-				margin-right: var(--uui-size-space-1);
+			#loader {
+				display: flex;
+				justify-content: center;
 			}
 
 			.log-type {
-				flex-grow: 1;
-				gap: var(--uui-size-space-2);
+				display: grid;
+				grid-template-columns: var(--uui-size-40) auto;
+				gap: var(--uui-size-layout-1);
 			}
 
 			uui-pagination {
 				flex: 1;
-				display: inline-block;
-			}
-
-			.pagination {
 				display: flex;
 				justify-content: center;
 				margin-top: var(--uui-size-layout-1);

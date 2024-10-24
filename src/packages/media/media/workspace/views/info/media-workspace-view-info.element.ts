@@ -57,7 +57,7 @@ export class UmbMediaWorkspaceViewInfoElement extends UmbLitElement {
 
 		this.consumeContext(UMB_MEDIA_WORKSPACE_CONTEXT, (context) => {
 			this.#workspaceContext = context;
-			this._mediaTypeUnique = this.#workspaceContext.getContentTypeId()!;
+			this._mediaTypeUnique = this.#workspaceContext.getContentTypeUnique();
 			this.#getData();
 			this.#observeContent();
 		});
@@ -95,6 +95,7 @@ export class UmbMediaWorkspaceViewInfoElement extends UmbLitElement {
 			this._updateDate = Array.isArray(variants) ? variants[0].updateDate || 'Unknown' : 'Unknown';
 		});
 	}
+
 	#openSvg(imagePath: string) {
 		const popup = window.open('', '_blank');
 		if (!popup) return;
@@ -124,9 +125,9 @@ export class UmbMediaWorkspaceViewInfoElement extends UmbLitElement {
 					.mediaUnique=${this._mediaUnique}></umb-media-workspace-view-info-history>
 			</div>
 			<div class="container">
-				<uui-box headline=${this.localize.term('general_general')} id="general-section"
-					>${this.#renderGeneralSection()}</uui-box
-				>
+				<uui-box headline=${this.localize.term('general_general')} id="general-section">
+					${this.#renderGeneralSection()}
+				</uui-box>
 			</div>
 		`;
 	}
