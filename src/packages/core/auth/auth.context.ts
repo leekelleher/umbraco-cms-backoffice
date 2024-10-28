@@ -8,6 +8,7 @@ import { UmbContextBase } from '@umbraco-cms/backoffice/class-api';
 import { UmbBooleanState } from '@umbraco-cms/backoffice/observable-api';
 import { ReplaySubject, Subject, firstValueFrom, switchMap } from '@umbraco-cms/backoffice/external/rxjs';
 import type { UmbBackofficeExtensionRegistry } from '@umbraco-cms/backoffice/extension-registry';
+import { UMB_BROADCAST_CONTEXT } from '../broadcast/index.js';
 
 export class UmbAuthContext extends UmbContextBase<UmbAuthContext> {
 	#isAuthorized = new UmbBooleanState<boolean>(false);
@@ -74,7 +75,18 @@ export class UmbAuthContext extends UmbContextBase<UmbAuthContext> {
 		// Observe changes to local storage and update the authorization state
 		// This establishes the tab-to-tab communication
 		window.addEventListener('storage', this.#onStorageEvent.bind(this));
+
+		this.consumeContext(UMB_BROADCAST_CONTEXT, (context) => {
+			this.#broadcastContext = context;
+			context.receive(async (event) => {
+				if (event.data === 'signOut') {
+					await this.#authFlow.signOut();
+				}
+			});
+		});
 	}
+
+	#broadcastContext?: typeof UMB_BROADCAST_CONTEXT.TYPE;
 
 	override destroy(): void {
 		super.destroy();
@@ -207,6 +219,7 @@ export class UmbAuthContext extends UmbContextBase<UmbAuthContext> {
 	 * @memberof UmbAuthContext
 	 */
 	signOut(): Promise<void> {
+		this.#broadcastContext?.post('signOut');
 		return this.#authFlow.signOut();
 	}
 
