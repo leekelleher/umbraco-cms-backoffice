@@ -25,6 +25,9 @@ export class UmbInputWithAliasElement extends UmbFormControlMixin<string, typeof
 	@property({ type: Boolean, attribute: 'auto-generate-alias' })
 	autoGenerateAlias?: boolean;
 
+	@property({ attribute: 'auto-generate-alias-casing' })
+	autoGenerateAliasCasing?: 'camel' | 'pascal' = 'camel';
+
 	@state()
 	private _aliasLocked = true;
 
@@ -44,6 +47,11 @@ export class UmbInputWithAliasElement extends UmbFormControlMixin<string, typeof
 		return this.shadowRoot?.querySelector<UUIInputElement>('uui-input')?.focus();
 	}
 
+	#generateAlias(value: string) {
+		const alias = generateAlias(value);
+		return this.autoGenerateAliasCasing === 'pascal' ? alias[0].toUpperCase() + alias.slice(1) : alias;
+	}
+
 	#onNameChange(e: UUIInputEvent) {
 		if (!(e instanceof UUIInputEvent)) return;
 
@@ -53,7 +61,7 @@ export class UmbInputWithAliasElement extends UmbFormControlMixin<string, typeof
 			this.value = e.target.value.toString();
 			if (this.autoGenerateAlias && this._aliasLocked) {
 				// Generate alias if it's locked and auto-generate is enabled
-				this.alias = generateAlias(this.value);
+				this.alias = this.#generateAlias(this.value);
 			}
 
 			this.dispatchEvent(new UmbChangeEvent());
@@ -71,10 +79,11 @@ export class UmbInputWithAliasElement extends UmbFormControlMixin<string, typeof
 			this.dispatchEvent(new UmbChangeEvent());
 		}
 	}
+
 	#onAliasBlur() {
 		// If the alias is empty, then try to generate one [NL]
 		if (!this.alias && this._aliasLocked === false) {
-			this.alias = generateAlias(this.value ?? '');
+			this.alias = this.#generateAlias(this.value ?? '');
 			this.dispatchEvent(new UmbChangeEvent());
 		}
 	}

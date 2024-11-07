@@ -169,6 +169,7 @@ export class UmbTemplateWorkspaceEditorElement extends UmbLitElement {
 					.value=${this._name}
 					.alias=${this._alias}
 					?auto-generate-alias=${this.#isNew}
+					auto-generate-alias-casing="pascal"
 					@change=${this.#onNameAndAliasChange}
 					${umbFocus()}>
 				</umb-input-with-alias>
